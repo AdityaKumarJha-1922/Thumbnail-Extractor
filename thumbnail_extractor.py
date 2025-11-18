@@ -16,15 +16,20 @@ class ThumbnailExtractor:
 
     SUPPORTED_FORMATS = ['.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm']
 
-    def __init__(self, output_folder='thumbnails'):
+    def __init__(self, output_folder='thumbnails', image_format='jpeg'):
         """
         Initialize the ThumbnailExtractor.
 
         Args:
             output_folder (str): Path to the folder where thumbnails will be saved
+            image_format (str): Output image format ('jpeg' or 'png', default: 'jpeg')
         """
         self.output_folder = Path(output_folder)
         self.output_folder.mkdir(parents=True, exist_ok=True)
+        self.image_format = image_format.lower()
+        if self.image_format not in ['jpeg', 'png']:
+            raise ValueError("image_format must be 'jpeg' or 'png'")
+        self.file_extension = 'jpg' if self.image_format == 'jpeg' else 'png'
 
     def extract_thumbnail(self, video_path, output_name=None):
         """
@@ -79,14 +84,19 @@ class ThumbnailExtractor:
 
             # Generate output filename
             if output_name is None:
-                output_name = f"{video_path.stem}_thumbnail.jpg"
-            elif not output_name.endswith(('.jpg', '.png')):
-                output_name = f"{output_name}.jpg"
+                output_name = f"{video_path.stem}_thumbnail.{self.file_extension}"
+            elif not output_name.endswith(('.jpg', '.jpeg', '.png')):
+                output_name = f"{output_name}.{self.file_extension}"
 
             output_path = self.output_folder / output_name
 
-            # Save the thumbnail
-            cv2.imwrite(str(output_path), frame)
+            # Save the thumbnail with appropriate parameters
+            if self.image_format == 'png':
+                # PNG compression level (0-9, where 9 is maximum compression)
+                cv2.imwrite(str(output_path), frame, [cv2.IMWRITE_PNG_COMPRESSION, 9])
+            else:
+                # JPEG quality (0-100, where 100 is best quality)
+                cv2.imwrite(str(output_path), frame, [cv2.IMWRITE_JPEG_QUALITY, 95])
             print(f"✓ Saved thumbnail: {output_path}")
 
             return True
@@ -158,6 +168,12 @@ def main():
         default='thumbnails',
         help='Output folder for thumbnails (default: thumbnails)'
     )
+    parser.add_argument(
+        '-f', '--format',
+        choices=['jpeg', 'png'],
+        default='jpeg',
+        help='Output image format (default: jpeg)'
+    )
 
     args = parser.parse_args()
 
@@ -168,7 +184,7 @@ def main():
         sys.exit(1)
 
     # Create extractor
-    extractor = ThumbnailExtractor(output_folder=args.output)
+    extractor = ThumbnailExtractor(output_folder=args.output, image_format=args.format)
 
     print("=" * 60)
     print("Video Thumbnail Extractor")

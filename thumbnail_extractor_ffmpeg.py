@@ -18,15 +18,20 @@ class FFmpegThumbnailExtractor:
 
     SUPPORTED_FORMATS = ['.mp4', '.avi', '.mov', '.mkv', '.flv', '.wmv', '.webm']
 
-    def __init__(self, output_folder='thumbnails'):
+    def __init__(self, output_folder='thumbnails', image_format='jpeg'):
         """
         Initialize the FFmpegThumbnailExtractor.
 
         Args:
             output_folder (str): Path to the folder where thumbnails will be saved
+            image_format (str): Output image format ('jpeg' or 'png', default: 'jpeg')
         """
         self.output_folder = Path(output_folder)
         self.output_folder.mkdir(parents=True, exist_ok=True)
+        self.image_format = image_format.lower()
+        if self.image_format not in ['jpeg', 'png']:
+            raise ValueError("image_format must be 'jpeg' or 'png'")
+        self.file_extension = 'jpg' if self.image_format == 'jpeg' else 'png'
         self._check_ffmpeg()
 
     def _check_ffmpeg(self):
@@ -109,9 +114,9 @@ class FFmpegThumbnailExtractor:
 
         # Generate output filename
         if output_name is None:
-            output_name = f"{video_path.stem}_thumbnail.jpg"
-        elif not output_name.endswith(('.jpg', '.png')):
-            output_name = f"{output_name}.jpg"
+            output_name = f"{video_path.stem}_thumbnail.{self.file_extension}"
+        elif not output_name.endswith(('.jpg', '.jpeg', '.png')):
+            output_name = f"{output_name}.{self.file_extension}"
 
         output_path = self.output_folder / output_name
 
@@ -119,16 +124,26 @@ class FFmpegThumbnailExtractor:
             # FFmpeg command to extract frame at specific timestamp
             # -ss before -i for fast seeking
             # -vframes 1 to extract only one frame
-            # -q:v for quality (1-31, lower is better)
+            # -q:v for quality (1-31, lower is better) - for JPEG only
             cmd = [
                 'ffmpeg',
                 '-ss', str(timestamp),  # Seek to timestamp (fast seek before input)
                 '-i', str(video_path),  # Input file
                 '-vframes', '1',         # Extract only 1 frame
-                '-q:v', str(quality),    # Quality setting
+            ]
+
+            # Add format-specific options
+            if self.image_format == 'png':
+                # PNG compression level (0-9, where 9 is maximum compression)
+                cmd.extend(['-compression_level', '9'])
+            else:
+                # JPEG quality (1-31, lower is better)
+                cmd.extend(['-q:v', str(quality)])
+
+            cmd.extend([
                 '-y',                    # Overwrite output file
                 str(output_path)
-            ]
+            ])
 
             # Run ffmpeg with suppressed output
             result = subprocess.run(
@@ -220,7 +235,13 @@ def main():
         default=2,
         choices=range(1, 32),
         metavar='[1-31]',
-        help='JPEG quality (1=best, 31=worst, default: 2)'
+        help='JPEG quality (1=best, 31=worst, default: 2) - only applies to JPEG format'
+    )
+    parser.add_argument(
+        '-f', '--format',
+        choices=['jpeg', 'png'],
+        default='jpeg',
+        help='Output image format (default: jpeg)'
     )
 
     args = parser.parse_args()
@@ -232,7 +253,7 @@ def main():
         sys.exit(1)
 
     # Create extractor
-    extractor = FFmpegThumbnailExtractor(output_folder=args.output)
+    extractor = FFmpegThumbnailExtractor(output_folder=args.output, image_format=args.format)
 
     print("=" * 60)
     print("FFmpeg Video Thumbnail Extractor (Optimized)")

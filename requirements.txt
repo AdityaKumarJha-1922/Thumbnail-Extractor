@@ -1,2 +1,9 @@
+# For OpenCV-based extractor (thumbnail_extractor.py)
 opencv-python>=4.5.0
 numpy>=1.19.0
+
+# For FFmpeg-based extractor (thumbnail_extractor_ffmpeg.py)
+# Note: Requires FFmpeg installed on system
+# Ubuntu/Debian: sudo apt-get install ffmpeg
+# macOS: brew install ffmpeg
+# Windows: Download from https://ffmpeg.org/download.html

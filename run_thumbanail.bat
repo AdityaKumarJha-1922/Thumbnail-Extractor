@@ -9,7 +9,7 @@ REM ----------------------------------------------
 setlocal enabledelayedexpansion
 
 REM Default python script path in Downloads
-set "PY_SCRIPT=C:\Users\adity\Downloads\thumbnail_extractor_ffmpeg.py"
+set "PY_SCRIPT=C:\Users\%USERNAME%\Downloads\thumbnail_extractor_ffmpeg.py"
 
 REM If user dragged a folder onto the .bat, %1 will contain it.
 if "%~1"=="" (

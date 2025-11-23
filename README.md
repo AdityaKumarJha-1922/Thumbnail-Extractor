@@ -56,6 +56,47 @@ Download and install from [ffmpeg.org](https://ffmpeg.org/download.html)
 
 ## Usage
 
+### Windows Automation (Batch File)
+
+For Windows users, a convenient batch file (`run_thumbanail.bat`) is provided for easy automation:
+
+**Features:**
+- Drag-and-drop folder support OR interactive folder picker
+- Automatic output folder organization
+- Configurable image format (PNG/JPEG)
+- No command-line knowledge required
+
+**How to Use:**
+
+1. **Edit the batch file** to set your Python script path (line 12):
+   ```batch
+   set "PY_SCRIPT=C:\Users\YOUR_USERNAME\Downloads\thumbnail_extractor_ffmpeg.py"
+   ```
+
+2. **Choose image format** (line 52, default is PNG):
+   ```batch
+   set "IMG_FORMAT=png"    REM Change to "jpeg" if preferred
+   ```
+
+3. **Run the batch file** using one of these methods:
+   - **Drag & Drop**: Drag a video folder onto the .bat file
+   - **Double-Click**: Double-click the .bat file and select a folder using the picker dialog
+
+**Output Structure:**
+The batch file automatically creates an organized output structure:
+```
+<parent_of_parent>\Thumbnails\<InputFolderName>_Thumbnail
+```
+
+For example, if your input folder is:
+```
+C:\Users\John\Videos\MyVideos
+```
+The output will be:
+```
+C:\Users\Thumbnails\MyVideos_Thumbnail
+```
+
 ### Basic Usage
 
 **FFmpeg Version (Recommended - Faster):**

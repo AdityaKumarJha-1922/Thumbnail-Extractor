@@ -1,14 +1,13 @@
 @echo off
 REM ----------------------------------------------
 REM Thumbnail Runner - supports drag & drop OR folder picker
-REM Saves output to: <parent_of_parent>\Thumbnails\<InputFolderName>_Thumbnail
-REM Runs: python "C:\Users\%USERNAME%\Downloads\thumbnail_extractor_ffmpeg.py"
+REM Saves output to: C:\Users\adity\Pictures\Thumbnails
+REM Runs: python "C:\Users\adity\Downloads\thumbnail_extractor_ffmpeg.py"
 REM Default image format: png (you can change below)
 REM ----------------------------------------------
-
 setlocal enabledelayedexpansion
 
-REM Default python script path in Downloads
+REM Default python script path in Downloads - CHANGE "adity" TO YOUR USERNAME
 set "PY_SCRIPT=C:\Users\adity\Downloads\thumbnail_extractor_ffmpeg.py"
 
 REM If user dragged a folder onto the .bat, %1 will contain it.
@@ -38,15 +37,11 @@ echo Selected input folder:
 echo     %INPUT_FOLDER%
 echo.
 
-REM Compute output folder:
-REM Logic: parent_of_parent = input_folder\..\..
-REM output_root = parent_of_parent\Thumbnails
-REM output_folder = output_root\<input_folder_name>_Thumbnail
+REM Set a fixed output directory on Desktop - CHANGE "adity" TO YOUR USERNAME
+set "OUTPUT_FOLDER=C:\Users\adity\Desktop\Thumbnails"
 
-for /f "usebackq delims=" %%O in (`powershell -NoProfile -Command ^
-    "$in = '%INPUT_FOLDER%'; $in = (Resolve-Path $in).Path; $parent = Split-Path $in -Parent; $parent2 = Split-Path $parent -Parent; if (-not $parent2) { $parent2 = $parent }; $outRoot = Join-Path $parent2 'Thumbnails'; $name = Split-Path $in -Leaf; $out = Join-Path $outRoot ($name + '_Thumbnail'); New-Item -ItemType Directory -Force -Path $out | Out-Null; Write-Output $out"`) do (
-    set "OUTPUT_FOLDER=%%O"
-)
+REM Create the directory if it doesn't exist
+if not exist "%OUTPUT_FOLDER%" mkdir "%OUTPUT_FOLDER%"
 
 REM Set default image format (png). Change to jpeg if you want.
 set "IMG_FORMAT=png"
